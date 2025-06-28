@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>SkinRadar - Buscador de Skins CS2 al Mejor Precio</title>
+  <meta name="description" content="Encuentra y compara precios de skins de CS2 en Steam, DMarket, CS.MONEY y más.">
+  <meta name="keywords" content="cs2, skins, steam, dmarket, cs.money, startrack">
+  <meta property="og:title" content="SkinRadar - Encuentra tu skin de CS2">
+  <meta property="og:description" content="Compara precios y busca skins en segundos. Startrack, filtros, favoritos...">
+  <meta property="og:image" content="https://i.imgur.com/QhCHsfZ.png">
+  <meta property="og:url" content="https://skinradar.vercel.app">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="https://i.imgur.com/QhCHsfZ.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body id="top">
+  <header style="text-align:center;padding:20px;">
+    <a href="#top"><img src="https://i.imgur.com/QhCHsfZ.png" alt="SkinRadar Logo" style="max-width:180px;filter:drop-shadow(0 0 8px cyan);cursor:pointer;"></a>
+  </header>
+
+  <main>
+    <!-- Aquí va tu buscador, filtros, resultados, favoritos, historial -->
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #121212;
+  color: #e0e0e0;
+}
+header {
+  border-bottom: 1px solid #333;
+}
+main {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+/* Aquí pondrás estilos para buscador, filtros, favoritos, etc. */
+// Cambiar moneda
+let currentCurrency = "USD";
+
+document.addEventListener("DOMContentLoaded", () => {
+  const searchInput = document.getElementById("searchInput");
+  const resultsDiv = document.getElementById("results");
+  const currencySelector = document.getElementById("currencySelector");
+
+  // Cargar historial
+  loadSearchHistory();
+
+  // Búsqueda
+  searchInput?.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+      const query = e.target.value.trim();
+      if (query !== "") {
+        saveToHistory(query);
+        showResults(query);
+      }
+    }
+  });
+
+  // Cambio de moneda
+  currencySelector?.addEventListener("change", (e) => {
+    currentCurrency = e.target.value;
+    updatePricesDisplay();
+  });
+});
+
+// Guardar historial en localStorage
+function saveToHistory(term) {
+  let history = JSON.parse(localStorage.getItem("history")) || [];
+  if (!history.includes(term)) {
+    history.unshift(term);
+    if (history.length > 10) history.pop();
+    localStorage.setItem("history", JSON.stringify(history));
+  }
+}
+
+// Cargar historial
+function loadSearchHistory() {
+  const history = JSON.parse(localStorage.getItem("history")) || [];
+  const container = document.getElementById("history");
+  if (container) {
+    container.innerHTML = "";
+    history.forEach(term => {
+      const btn = document.createElement("button");
+      btn.textContent = term;
+      btn.onclick = () => showResults(term);
+      container.appendChild(btn);
+    });
+  }
+}
+
+// Mostrar resultados simulados
+function showResults(query) {
+  const resultsDiv = document.getElementById("results");
+  resultsDiv.innerHTML = "";
+
+  const dummyPrices = {
+    USD: Math.random() * 100,
+    EUR: Math.random() * 90,
+  };
+
+  const isStartrack = document.getElementById("startrack")?.checked;
+
+  const item = document.createElement("div");
+  item.innerHTML = `
+    <h2>${query} ${isStartrack ? "⭐" : ""}</h2>
+    <p>Precio más barato: <strong>${dummyPrices[currentCurrency].toFixed(2)} ${currentCurrency}</strong></p>
+    <button onclick="addToFavorites('${query}')">⭐ Agregar a favoritos</button>
+  `;
+  resultsDiv.appendChild(item);
+}
+
+// Favoritos
+function addToFavorites(item) {
+  let favs = JSON.parse(localStorage.getItem("favorites")) || [];
+  if (!favs.includes(item)) {
+    favs.push(item);
+    localStorage.setItem("favorites", JSON.stringify(favs));
+    alert("Agregado a favoritos");
+  }
+}
+
+function updatePricesDisplay() {
+  const lastSearch = JSON.parse(localStorage.getItem("history"))?.[0];
+  if (lastSearch) showResults(lastSearch);
+}
